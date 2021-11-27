@@ -6,6 +6,9 @@ import oauth2
 import mongodb
 import sqlite"""
 
+import yaml
+from ipywidgets import interact_manual, Text, Password
+
 # This file accesses the data
 
 """
@@ -14,6 +17,19 @@ Don't remove any missing values, or deal with outliers.
 Make sure you have legalities correct, both intellectual property and personal data privacy rights. 
 Beyond the legal side also think about the ethical issues around this data. 
 """
+
+
+def credentials_interact():
+    def write_credentials(username, password):
+        with open("credentials.yaml", "w") as credentials_file:
+            credentials_dict = {'username': username,
+                                'password': password}
+            yaml.dump(credentials_dict, credentials_file)
+            print(f"Credentials saved.\nUsername: {username}\nPassword: {'*' * len(password)}")
+
+    interact_manual(write_credentials,
+                    username=Text(description="Username:"),
+                    password=Password(description="Password:"))
 
 
 def data():
