@@ -202,14 +202,9 @@ class PostcodeDataTable:
         request.urlretrieve(url, filename)
 
         self.connection.query(f"""
-            ALTER TABLE `postcode_data`
-            DROP INDEX IF EXISTS `PRIMARY`,
-            DROP INDEX IF EXISTS `po.postcode`,
-            ADD PRIMARY KEY (`db_id`),
-            MODIFY `db_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=1;
-            CREATE INDEX `po.postcode` USING HASH
-                ON `postcode_data`
-                    (postcode);
+            LOAD DATA LOCAL INFILE 'open_postcode_geo.csv' INTO TABLE `postcode_data`
+            FIELDS TERMINATED BY ',' 
+            LINES STARTING BY '' TERMINATED BY '\n';
         """)
 
 
