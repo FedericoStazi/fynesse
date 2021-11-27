@@ -9,6 +9,8 @@ import sqlite"""
 import yaml
 from ipywidgets import interact_manual, Text, Password
 import pymysql
+from tables import pp_data_table
+from tables import postcode_data_table
 
 # This file accesses the data
 
