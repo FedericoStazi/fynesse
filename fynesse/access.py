@@ -24,11 +24,14 @@ def credentials_interact():
     """Create an interactive prompt for the sql username and password"""
 
     def write_credentials(username, password):
-        with open("credentials.yaml", "w") as credentials_file:
+        credentials_filename = "credentials.yaml";
+        with open(credentials_filename, "w") as credentials_file:
             credentials_dict = {'username': username,
                                 'password': password}
             yaml.dump(credentials_dict, credentials_file)
-            print(f"Credentials saved.\nUsername: {username}\nPassword: {'*' * len(password)}")
+            print(f"Credentials saved in {credentials_filename}.\n"
+                  f"Username: {username}\n"
+                  f"Password: {'*' * len(password)}")
 
     interact_manual(write_credentials,
                     username=Text(description="Username:"),
