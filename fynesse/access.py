@@ -11,6 +11,7 @@ from ipywidgets import interact_manual, Text, Password
 import pymysql
 from urllib import request
 from zipfile import ZipFile
+import pandas as pd
 
 
 # This file accesses the data
@@ -149,10 +150,12 @@ class PPDataTable:
                 self.connection.query(f"""
                     LOAD DATA LOCAL INFILE '{filename}' INTO TABLE pp_data
                         FIELDS TERMINATED BY ','
+                        OPTIONALLY ENCLOSED BY '"'
                         LINES STARTING BY '' TERMINATED BY '\\n';
                 """)
 
                 os.remove(filename)
+
         print("")
 
 
@@ -210,6 +213,9 @@ class PostcodeDataTable:
             FIELDS TERMINATED BY ',' 
             LINES STARTING BY '' TERMINATED BY '\n';
         """)
+
+        os.remove(filename)
+        os.remove(f"{filename}.zip")
 
 
 def data():
