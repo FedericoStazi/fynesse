@@ -10,6 +10,7 @@ import yaml
 from ipywidgets import interact_manual, Text, Password
 import pymysql
 from urllib import request
+from zipfile import ZipFile
 
 
 # This file accesses the data
@@ -197,12 +198,15 @@ class PostcodeDataTable:
         """)
 
     def load_data(self):
-        filename = "open_postcode_geo.csv.zip"
+        filename = "open_postcode_geo.csv"
         url = "https://www.getthedata.com/downloads/open_postcode_geo.csv.zip"
-        request.urlretrieve(url, filename)
+        request.urlretrieve(url, f"{filename}.zip")
+
+        with ZipFile(f"{filename}.zip", 'r') as zip_file:
+            zip_file.extractall()
 
         self.connection.query(f"""
-            LOAD DATA LOCAL INFILE 'open_postcode_geo.csv' INTO TABLE `postcode_data`
+            LOAD DATA LOCAL INFILE '{filename}' INTO TABLE postcode_data
             FIELDS TERMINATED BY ',' 
             LINES STARTING BY '' TERMINATED BY '\n';
         """)
