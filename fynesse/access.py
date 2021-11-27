@@ -94,7 +94,8 @@ class Connection:
         cursor = self.connection.cursor()
         cursor.execute(query)
         rows = cursor.fetchall()
-        return rows
+        columns = [x for x, *_ in cursor.description]
+        return pd.DataFrame(rows, columns=columns)
 
 
 class PPDataTable:
