@@ -20,6 +20,7 @@ Beyond the legal side also think about the ethical issues around this data.
 
 
 def credentials_interact():
+    """Create an interactive prompt for the sql username and password"""
     def write_credentials(username, password):
         with open("credentials.yaml", "w") as credentials_file:
             credentials_dict = {'username': username,
