@@ -88,8 +88,11 @@ class Connection:
         except Exception as e:
             print(f"Error creating the database: {e}")
 
-    def get_cursor(self):
-        return self.connection.cursor()
+    def query(self, query):
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        return rows
 
 
 class PPDataTable:
@@ -97,8 +100,7 @@ class PPDataTable:
         self.connection = connection
 
     def create_table(self):
-        cursor = self.connection.get_cursor()
-        cursor.execute(f"""
+        return self.connection.query(f"""
             DROP TABLE IF EXISTS `pp_data`;
             CREATE TABLE IF NOT EXISTS `pp_data` (
                 `transaction_unique_identifier` tinytext COLLATE utf8_bin NOT NULL,
@@ -121,12 +123,8 @@ class PPDataTable:
             ) DEFAULT CHARSET=utf8 COLLATE=utf8_bin AUTO_INCREMENT=1;
         """)
 
-        rows = cursor.fetchall()
-        return rows
-
     def create_indices(self):
-        cursor = self.connection.get_cursor()
-        cursor.execute(f"""
+        return self.connection.query(f"""
             ALTER TABLE `pp_data`
             ADD PRIMARY KEY (`db_id`),
             MODIFY `db_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=1;
@@ -138,11 +136,7 @@ class PPDataTable:
                     (date_of_transfer);
         """)
 
-        rows = cursor.fetchall()
-        return rows
-
     def load_data(self, *, start_year=1995, end_year=2021):
-        cursor = self.connection.get_cursor()
         for year in range(start_year, end_year + 1):
             for part in range(1, 3):
                 print(f"\rLoading year {year} part {part}...", end="")
@@ -151,16 +145,14 @@ class PPDataTable:
                 url = f"http://prod.publicdata.landregistry.gov.uk.s3-website-eu-west-1.amazonaws.com/{filename}"
                 request.urlretrieve(url, filename)
 
-                cursor.execute(f"""
-                        LOAD DATA LOCAL INFILE '{filename}' INTO TABLE pp_data
-                            FIELDS TERMINATED BY ','
-                            LINES STARTING BY '' TERMINATED BY '\\n';
-                    """)
+                self.connection.query(f"""
+                    LOAD DATA LOCAL INFILE '{filename}' INTO TABLE pp_data
+                        FIELDS TERMINATED BY ','
+                        LINES STARTING BY '' TERMINATED BY '\\n';
+                """)
 
                 os.remove(filename)
-
-        rows = cursor.fetchall()
-        return rows
+        print("")
 
 
 class PostcodeDataTable:
@@ -168,8 +160,7 @@ class PostcodeDataTable:
         self.connection = connection
 
     def create_table(self):
-        cursor = self.connection.get_cursor()
-        cursor.execute(f"""
+        return self.connection.query(f"""
             DROP TABLE IF EXISTS `postcode_data`;
             CREATE TABLE IF NOT EXISTS `postcode_data` (
             `postcode` varchar(8) COLLATE utf8_bin NOT NULL,
@@ -193,12 +184,8 @@ class PostcodeDataTable:
             ) DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
         """)
 
-        rows = cursor.fetchall()
-        return rows
-
     def create_indices(self):
-        cursor = self.connection.get_cursor()
-        cursor.execute(f"""
+        return self.connection.query(f"""
             ALTER TABLE `postcode_data`
             DROP INDEX IF EXISTS `PRIMARY`,
             DROP INDEX IF EXISTS `po.postcode`,
@@ -209,30 +196,21 @@ class PostcodeDataTable:
                     (postcode);
         """)
 
-        rows = cursor.fetchall()
-        return rows
-
     def load_data(self):
         filename = "open_postcode_geo.csv.zip"
         url = "https://www.getthedata.com/downloads/open_postcode_geo.csv.zip"
         request.urlretrieve(url, filename)
 
-        cursor = self.connection.get_cursor()
-        cursor.execute("""
-                ALTER TABLE `postcode_data`
-                DROP INDEX IF EXISTS `PRIMARY`,
-                DROP INDEX IF EXISTS `po.postcode`,
-                ADD PRIMARY KEY (`db_id`),
-                MODIFY `db_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=1;
-                CREATE INDEX `po.postcode` USING HASH
-                    ON `postcode_data`
-                        (postcode);
-            """)
-
-        os.remove(filename)
-
-        rows = cursor.fetchall()
-        return rows
+        self.connection.query(f"""
+            ALTER TABLE `postcode_data`
+            DROP INDEX IF EXISTS `PRIMARY`,
+            DROP INDEX IF EXISTS `po.postcode`,
+            ADD PRIMARY KEY (`db_id`),
+            MODIFY `db_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=1;
+            CREATE INDEX `po.postcode` USING HASH
+                ON `postcode_data`
+                    (postcode);
+        """)
 
 
 def data():
