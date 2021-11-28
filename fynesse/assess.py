@@ -2,9 +2,11 @@ from .config import *
 
 from fynesse import access
 
+import pandas as pd
 import osmnx as ox
-# QUESTION is this library ok?
-import plotly.express as px
+import bokeh.io
+import bokeh.plotting
+import bokeh.tile_providers
 
 """These are the types of import we might expect in this file
 import pandas
@@ -60,19 +62,25 @@ def get_pois_by_bbox(lat, lon, dist, tags):
     return ox.geometries_from_point((lat, lon), dist=dist, tags=tags)
 
 
-def _plot(df, lat, lon, name=None):
-    fig = px.scatter_mapbox(df, lat=lat, lon=lon, hover_name=name, zoom=10)
-    fig.update_layout(title="London", title_x=0.5)
-    fig.update_layout(mapbox_style="carto-positron")
-    fig.show()
+def _plot(lat, lon, name=None):
+    points = pd.DataFrame.from_dict({'x': lat, 'y': lon})
+    bokeh.io.output_notebook()
+    p = bokeh.plotting.figure(
+        x_range=(-100000, 60000), y_range=(6600000, 6800000),
+        x_axis_type="mercator", y_axis_type="mercator"
+    )
+    p.circle(x='x', y='y', size=1, alpha=0.7, source=points)
+    p.add_tile(bokeh.tile_providers.get_provider(bokeh.tile_providers.CARTODBPOSITRON))
+
+    bokeh.plotting.show(p)
 
 
 def plot_pois(df):
-    _plot(df, df.geometry.centroid.x, df.geometry.centroid.y, df.name)
+    _plot(df.geometry.centroid.x, df.geometry.centroid.y, df.name)
 
 
 def plot_houses(df):
-    _plot(df, df.lattitude, df.longitude, df.postcode)
+    _plot(df.lattitude, df.longitude, df.postcode)
 
 
 def data():
