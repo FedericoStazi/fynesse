@@ -64,15 +64,15 @@ def get_pois_by_bbox(lat, lon, dist, tags):
 
 
 def _to_mercator(x, y):
-    lat = x
-    lon = y
+    lat = pd.Series(x, dtype=float)
+    lon = pd.Series(y, dtype=float)
     r_major = 6378137.000
     x = r_major * np.radians(lon)
     scale = x / lon
     y = (180.0 / np.pi
          * np.log(np.tan(np.pi / 4.0 + lat * (np.pi / 180.0) / 2.0))
          * scale)
-    return (x, y)
+    return x, y
 
 
 def _plot(lat, lon, name=None):
