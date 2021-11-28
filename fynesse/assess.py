@@ -2,6 +2,7 @@ from .config import *
 
 from fynesse import access
 
+import numpy as np
 import pandas as pd
 import osmnx as ox
 import bokeh.io
@@ -62,14 +63,30 @@ def get_pois_by_bbox(lat, lon, dist, tags):
     return ox.geometries_from_point((lat, lon), dist=dist, tags=tags)
 
 
+def _to_mercator(x, y):
+    lat = x
+    lon = y
+    r_major = 6378137.000
+    x = r_major * np.radians(lon)
+    scale = x / lon
+    y = (180.0 / np.pi
+         * np.log(np.tan(np.pi / 4.0 + lat * (np.pi / 180.0) / 2.0))
+         * scale)
+    return (x, y)
+
+
 def _plot(lat, lon, name=None):
-    points = pd.DataFrame.from_dict({'x': lat, 'y': lon})
+    c = [_to_mercator(x, y) for x, y in zip(lon, lat)]
+    points = pd.DataFrame.from_dict({
+        'x': [x for x, _ in c],
+        'y': [y for _, y in c]
+    })
     bokeh.io.output_notebook()
     p = bokeh.plotting.figure(
-        x_range=(-100000, 60000), y_range=(6600000, 6800000),
+        x_range=(-20000, 10000), y_range=(6650000, 6750000),
         x_axis_type="mercator", y_axis_type="mercator"
     )
-    p.circle(x='x', y='y', size=1, alpha=0.7, source=points)
+    p.circle(x='x', y='y', size=5, alpha=0.7, source=points)
     p.add_tile(bokeh.tile_providers.get_provider(bokeh.tile_providers.CARTODBPOSITRON))
 
     bokeh.plotting.show(p)
