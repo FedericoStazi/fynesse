@@ -69,10 +69,10 @@ def get_pois_by_bbox(lat, lon, dist, tags):
 
 
 def plot(df):
-    df_t = schools.to_crs(3857)
+    df_t = df.to_crs(3857)
     bokeh.io.output_notebook()
     p = bokeh.plotting.figure(
-        x_range=(-20000, 10000), y_range=(6650000, 6750000),
+        x_range=(-30000, 10000), y_range=(6680000, 6750000),
         x_axis_type="mercator", y_axis_type="mercator"
     )
     p.circle(df_t.geometry.centroid.x, df_t.geometry.centroid.y, size=5, alpha=0.7)
