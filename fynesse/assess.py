@@ -5,6 +5,8 @@ from fynesse import access
 import numpy as np
 import pandas as pd
 import osmnx as ox
+import shapely
+import geopandas
 import bokeh.io
 import bokeh.plotting
 import bokeh.tile_providers
@@ -26,13 +28,16 @@ Ensure that date formats are correct and correctly time-zoned.
 
 
 def _get_houses(connection, condition):
-    return connection.query(f"""
+    houses = connection.query(f"""
         SELECT pp_data.*, lattitude, longitude
         FROM pp_data
         INNER JOIN postcode_data
         ON pp_data.postcode = postcode_data.postcode
         WHERE {condition}
     """)
+    houses["geometry"] = [shapely.geometry.Point(lat, lon) for lat, lon in
+                          zip(houses["lattitude"], houses["longitude"])]
+    return geopandas.GeoDataFrame(houses)
 
 
 def get_house_by_id(connection, house_id):
@@ -63,41 +68,16 @@ def get_pois_by_bbox(lat, lon, dist, tags):
     return ox.geometries_from_point((lat, lon), dist=dist, tags=tags)
 
 
-def _to_mercator(x, y):
-    lat = pd.Series(x, dtype=float)
-    lon = pd.Series(y, dtype=float)
-    r_major = 6378137.000
-    x = r_major * np.radians(lon)
-    scale = x / lon
-    y = (180.0 / np.pi
-         * np.log(np.tan(np.pi / 4.0 + lat * (np.pi / 180.0) / 2.0))
-         * scale)
-    return x, y
-
-
-def _plot(lat, lon, name=None):
-    c = [_to_mercator(x, y) for x, y in zip(lon, lat)]
-    points = pd.DataFrame.from_dict({
-        'x': [x for x, _ in c],
-        'y': [y for _, y in c]
-    })
+def plot(df):
+    df_t = schools.to_crs(3857)
     bokeh.io.output_notebook()
     p = bokeh.plotting.figure(
         x_range=(-20000, 10000), y_range=(6650000, 6750000),
         x_axis_type="mercator", y_axis_type="mercator"
     )
-    p.circle(x='x', y='y', size=5, alpha=0.7, source=points)
+    p.circle(df_t.geometry.centroid.x, df_t.geometry.centroid.y, size=5, alpha=0.7)
     p.add_tile(bokeh.tile_providers.get_provider(bokeh.tile_providers.CARTODBPOSITRON))
-
     bokeh.plotting.show(p)
-
-
-def plot_pois(df):
-    _plot(df.geometry.centroid.x, df.geometry.centroid.y, df.name)
-
-
-def plot_houses(df):
-    _plot(df.lattitude, df.longitude, df.postcode)
 
 
 def data():
