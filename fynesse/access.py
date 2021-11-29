@@ -253,6 +253,6 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
     return geopandas.GeoDataFrame(houses, crs=4326)
 
 
-def get_pois_by_bbox(*, bbox, tags=None):
+def get_pois(*, bbox, tags=None):
     (lat, lon, dist) = bbox
     return ox.geometries_from_point((lat, lon), dist=dist, tags=tags)
