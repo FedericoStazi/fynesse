@@ -1,11 +1,5 @@
 from .config import *
 
-"""These are the types of import we might expect in this file
-import httplib2
-import oauth2
-import mongodb
-import sqlite"""
-
 import yaml
 from ipywidgets import interact_manual, Text, Password
 import pymysql
@@ -14,6 +8,7 @@ from zipfile import ZipFile
 import pandas as pd
 import shapely
 import geopandas
+import osmnx as ox
 
 
 # This file accesses the data
@@ -221,7 +216,7 @@ class PostcodeDataTable:
         os.remove(f"{filename}.zip")
 
 
-def get_houses(connection, postcode, bbox, sold_after, sold_before):
+def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_before=None):
     conditions = []
 
     if postcode:
@@ -256,3 +251,8 @@ def get_houses(connection, postcode, bbox, sold_after, sold_before):
         """)
     houses["geometry"] = houses[["longitude", "lattitude"]].apply(shapely.geometry.Point, axis=1)
     return geopandas.GeoDataFrame(houses, crs=4326)
+
+
+def get_pois_by_bbox(*, bbox, tags=None):
+    (lat, lon, dist) = bbox
+    return ox.geometries_from_point((lat, lon), dist=dist, tags=tags)

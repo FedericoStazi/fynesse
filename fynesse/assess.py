@@ -2,7 +2,6 @@ from .config import *
 
 from fynesse import access
 
-import osmnx as ox
 import bokeh.io
 import bokeh.plotting
 import bokeh.tile_providers
@@ -21,46 +20,6 @@ What do columns represent? Make sure they are correctly labeled.
 How is the data indexed. Crete visualisation routines to assess the data (e.g. in bokeh). 
 Ensure that date formats are correct and correctly time-zoned.
 """
-
-
-def _get_houses(connection, condition):
-    houses = connection.query(f"""
-        SELECT pp_data.*, lattitude, longitude
-        FROM pp_data
-        INNER JOIN postcode_data
-        ON pp_data.postcode = postcode_data.postcode
-        WHERE {condition}
-    """)
-    houses["geometry"] = houses[["longitude", "lattitude"]].apply(shapely.geometry.Point, axis=1)
-    return geopandas.GeoDataFrame(houses, crs=4326)
-
-
-def get_house_by_id(connection, house_id):
-    return _get_houses(connection, f"pp_data.db_id = {house_id}")
-
-
-def get_houses_by_postcode(connection, postcode):
-    if not postcode:
-        # QUESTION: is it ok? should it also work outside of London?
-        rpostcode = "'^(WC|EC|N|E|SE|SW|W|NW)([^[:alpha:]]|$)'"
-    elif postcode[-1].isdigit():
-        rpostcode = f"'^{postcode}([^[:digit:]]|$)'"
-    else:
-        rpostcode = f"'^{postcode}([^[:alpha:]]|$)'"
-    return _get_houses(connection, f"pp_data.postcode RLIKE {rpostcode}")
-
-
-def get_houses_by_bbox(connection, lat, lon, dist):
-    return _get_houses(connection, f"""
-        lattitude > {lat - dist / 2} AND
-        lattitude < {lat + dist / 2} AND
-        longitude > {lon - dist / 2} AND
-        longitude < {lon + dist / 2}
-    """)
-
-
-def get_pois_by_bbox(lat, lon, dist, tags):
-    return ox.geometries_from_point((lat, lon), dist=dist, tags=tags)
 
 
 def plot(df):
