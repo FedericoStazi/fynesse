@@ -38,7 +38,7 @@ def get_distances_from_closest_poi(df, *, tags):
     eps = 0.1
 
     pois = ox.geometries.geometries_from_bbox(maxy + eps, miny - eps, maxx + eps, minx + eps, tags=tags)
-    print(f"Number of pois: {pois}")
+    print(f"Number of pois: {len(pois)}")
 
     return df.geometry.apply(pois.distance).min(axis=1)
 
