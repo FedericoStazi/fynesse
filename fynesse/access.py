@@ -12,6 +12,8 @@ import pymysql
 from urllib import request
 from zipfile import ZipFile
 import pandas as pd
+import shapely
+import geopandas
 
 
 # This file accesses the data
@@ -219,7 +221,38 @@ class PostcodeDataTable:
         os.remove(f"{filename}.zip")
 
 
-def data():
-    """Read the data from the web or local file, returning structured format such as a data frame"""
-    raise NotImplementedError
-    # QUESTION: do I need to use this?
+def get_houses(connection, postcode, bbox, sold_after, sold_before):
+    conditions = []
+
+    if postcode:
+        if postcode[-1].isdigit():
+            rpostcode = f"'^{postcode}([^[:digit:]]|$)'"
+        else:
+            rpostcode = f"'^{postcode}([^[:alpha:]]|$)'"
+        conditions.append(f"pp_data.postcode RLIKE {rpostcode}")
+
+    if bbox:
+        (lat, lon, dist) = bbox
+        conditions.append(f"""
+            lattitude > {lat - dist / 2} AND
+            lattitude < {lat + dist / 2} AND
+            longitude > {lon - dist / 2} AND
+            longitude < {lon + dist / 2}
+        """)
+
+    if sold_after:
+        raise NotImplementedError
+
+    if sold_before:
+        raise NotImplementedError
+
+    # TODO: can expand to all columns
+    houses = connection.query(f"""
+            SELECT pp_data.*, lattitude, longitude
+            FROM pp_data
+            INNER JOIN postcode_data
+            ON pp_data.postcode = postcode_data.postcode
+            WHERE {" AND ".join(conditions)}
+        """)
+    houses["geometry"] = houses[["longitude", "lattitude"]].apply(shapely.geometry.Point, axis=1)
+    return geopandas.GeoDataFrame(houses, crs=4326)

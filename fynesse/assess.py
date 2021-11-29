@@ -2,11 +2,7 @@ from .config import *
 
 from fynesse import access
 
-import numpy as np
-import pandas as pd
 import osmnx as ox
-import shapely
-import geopandas
 import bokeh.io
 import bokeh.plotting
 import bokeh.tile_providers
