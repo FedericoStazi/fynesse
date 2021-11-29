@@ -35,9 +35,8 @@ def _get_houses(connection, condition):
         ON pp_data.postcode = postcode_data.postcode
         WHERE {condition}
     """)
-    houses["geometry"] = [shapely.geometry.Point(lat, lon) for lat, lon in
-                          zip(houses["lattitude"], houses["longitude"])]
-    return geopandas.GeoDataFrame(houses)
+    houses["geometry"] = houses[["longitude", "lattitude"]].apply(shapely.geometry.Point, axis=1)
+    return geopandas.GeoDataFrame(houses, crs=4326)
 
 
 def get_house_by_id(connection, house_id):
