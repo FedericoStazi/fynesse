@@ -99,7 +99,7 @@ class Connection:
 
 
 class PPDataTable:
-    def __int__(self, connection):
+    def __init__(self, connection):
         self.connection = connection
 
     def create_table(self):
@@ -161,7 +161,7 @@ class PPDataTable:
 
 
 class PostcodeDataTable:
-    def __int__(self, connection):
+    def __init__(self, connection):
         self.connection = connection
 
     def create_table(self):
