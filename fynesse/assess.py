@@ -2,6 +2,8 @@ from .config import *
 
 from fynesse import access
 
+import osmnx as ox
+import matplotlib.pyplot as plt
 import bokeh.io
 import bokeh.plotting
 import bokeh.tile_providers
@@ -29,6 +31,16 @@ def plot(df):
     p.circle(df_t.geometry.centroid.x, df_t.geometry.centroid.y, size=5, alpha=0.7)
     p.add_tile(bokeh.tile_providers.get_provider(bokeh.tile_providers.CARTODBPOSITRON))
     bokeh.plotting.show(p)
+
+
+def get_distances_from_closest_poi(df, *, tags):
+    minx, miny, maxx, maxy = df.to_crs(4326).total_bounds
+    eps = 0.1
+
+    pois = ox.geometries.geometries_from_bbox(maxy + eps, miny - eps, maxx + eps, minx + eps, tags=tags)
+    print(f"Number of pois: {pois}")
+
+    return df.geometry.apply(pois.distance).min(axis=1)
 
 
 def data():
