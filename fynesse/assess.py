@@ -36,8 +36,8 @@ def plot(df):
 def get_distances_from_closest_poi(df, *, tags=None, bbox=None):
     if bbox is None:
         minx, miny, maxx, maxy = df.to_crs(4326).total_bounds
-        bbox = ((minx + maxx) / 2,
-                (miny + maxy) / 2,
+        bbox = ((miny + maxy) / 2,
+                (minx + maxx) / 2,
                 max(maxx - minx, maxy - miny) + 0.1)
 
     pois = access.get_pois_fast(bbox=bbox, tags=tags)
