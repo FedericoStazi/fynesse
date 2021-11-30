@@ -235,10 +235,10 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
         conditions.append(f"longitude < {lon + dist / 2}")
 
     if sold_after:
-        conditions.append(f"date_of_transfer >= {sold_after}")
+        conditions.append(f"date_of_transfer >= \"{sold_after}\"")
 
     if sold_before:
-        conditions.append(f"date_of_transfer <= {sold_before}")
+        conditions.append(f"date_of_transfer <= \"{sold_before}\"")
 
     houses = connection.query(f"""
             SELECT pp_data.*, lattitude, longitude
