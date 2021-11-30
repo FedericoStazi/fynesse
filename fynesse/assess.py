@@ -32,14 +32,16 @@ def geo_plot(df, *, label=None):
             y=df_t.geometry.centroid.y,
             name=df_t[label],
         ))
+        tooltips = [(label, "@" + label)]
     else:
         source = bokeh.plotting.ColumnDataSource(data=dict(
             x=df_t.geometry.centroid.x,
             y=df_t.geometry.centroid.y,
         ))
+        tooltips = None
 
     p = bokeh.plotting.figure(
-        width=600, height=600, tooltips=[("name", "@name")],
+        width=600, height=600, tooltips=tooltips,
         x_axis_type="mercator", y_axis_type="mercator",
         tools="pan,wheel_zoom")
 
