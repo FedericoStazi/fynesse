@@ -61,8 +61,10 @@ def get_distances_from_closest(df, targets):
     return df.geometry.apply(targets.distance).min(axis=1)
 
 
-def one_hot_encoding(*, column, col_name, values):
-    return pd.DataFrame({f"{col_name}_is_{val}": (column == val).astype(float) for val in values})
+def one_hot_encoding(df, column, *, values=None):
+    if values is None:
+        values = df[column].unique()
+    return pd.DataFrame({f"{column}_is_{val}": (df[column] == val).astype(float) for val in values})
 
 
 def data():
