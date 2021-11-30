@@ -240,10 +240,10 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
         conditions.append(f"date_of_transfer <= \"{sold_before}\"")
 
     houses = connection.query(f"""
-            SELECT pp_data.*, lattitude, longitude
+            SELECT * 
             FROM pp_data
             INNER JOIN postcode_data
-            ON pp_data.postcode = postcode_data.postcode
+            USING (postcode)
             WHERE {" AND ".join(conditions)}
         """)
     houses["geometry"] = houses[["longitude", "lattitude"]].apply(shapely.geometry.Point, axis=1)
