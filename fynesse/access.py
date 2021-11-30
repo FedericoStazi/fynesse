@@ -261,8 +261,8 @@ def get_districts(connection):
     districts = connection.query("""
         SELECT 
             postcode_district AS district, 
-            AVG(lattitude) as lattitude, 
-            AVG(longitude) as longitude FROM postcode_data
+            AVG(lattitude) as lat, 
+            AVG(longitude) as lon FROM postcode_data
         WHERE postcode_district != "" AND status = "live"
         GROUP BY district
     """)
