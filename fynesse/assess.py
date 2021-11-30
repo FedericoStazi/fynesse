@@ -2,8 +2,6 @@ from .config import *
 
 from fynesse import access
 
-import osmnx as ox
-import matplotlib.pyplot as plt
 import bokeh.io
 import bokeh.plotting
 import bokeh.tile_providers
