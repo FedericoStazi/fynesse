@@ -253,7 +253,7 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
             USING (postcode)
             WHERE {" AND ".join(conditions)}
         """)
-    houses["geometry"] = houses[["longitude", "lattitude"]].apply(shapely.geometry.Point, axis=1)
+    houses["geometry"] = houses[["lon", "lat"]].apply(shapely.geometry.Point, axis=1)
     return geopandas.GeoDataFrame(houses, crs=4326)
 
 
@@ -266,7 +266,7 @@ def get_districts(connection):
         WHERE postcode_district != "" AND status = "live"
         GROUP BY district
     """)
-    districts["geometry"] = districts[["longitude", "lattitude"]].apply(shapely.geometry.Point, axis=1)
+    districts["geometry"] = districts[["lon", "lat"]].apply(shapely.geometry.Point, axis=1)
     return geopandas.GeoDataFrame(districts, crs=4326)
 
 
