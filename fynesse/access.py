@@ -217,7 +217,7 @@ class PostcodeDataTable:
 
 
 def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_before=None):
-    conditions = []
+    conditions = ["TRUE"]
 
     if postcode:
         if postcode[-1].isdigit():
