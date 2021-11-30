@@ -2,6 +2,7 @@ from .config import *
 
 from fynesse import access
 
+import pandas as pd
 import bokeh.io
 import bokeh.plotting
 import bokeh.tile_providers
@@ -58,6 +59,10 @@ def get_bbox_around(df, *, padding=0.1):
 
 def get_distances_from_closest(df, targets):
     return df.geometry.apply(targets.distance).min(axis=1)
+
+
+def one_hot_encoding(*, column, col_name, values):
+    return pd.DataFrame({f"{col_name}_is_{val}": (column == val).astype(float) for val in values})
 
 
 def data():
