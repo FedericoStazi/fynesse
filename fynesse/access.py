@@ -240,7 +240,14 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
         conditions.append(f"date_of_transfer <= \"{sold_before}\"")
 
     houses = connection.query(f"""
-            SELECT * 
+            SELECT 
+                price, 
+                date_of_transfer as date, 
+                property_type as type, 
+                postcode, 
+                postcode_district as district, 
+                lattitude as lat, 
+                longitude as lon
             FROM pp_data
             INNER JOIN postcode_data
             USING (postcode)
