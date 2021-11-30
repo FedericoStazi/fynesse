@@ -58,7 +58,7 @@ def get_bbox_around(df, *, padding=0.1):
 
 
 def get_distances_from_closest(df, targets, *, districts):
-    distances = df.geometry.apply(targets.distance).min(axis=1).to_frame(name="__distances__")
+    distances = districts.geometry.apply(targets.distance).min(axis=1).to_frame(name="__distances__")
     district_distances = districts.join(distances)
     district_distances = district_distances[["district", "__distances__"]].set_index("district")
     return df.join(district_distances, on="district")["__distances__"]
