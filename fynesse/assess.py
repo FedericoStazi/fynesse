@@ -33,11 +33,14 @@ def plot(df):
     bokeh.plotting.show(p)
 
 
-def get_distances_from_closest_poi(df, *, tags):
-    minx, miny, maxx, maxy = df.to_crs(4326).total_bounds
-    eps = 0.1
+def get_distances_from_closest_poi(df, *, tags=None, bbox=None):
+    if bbox is None:
+        minx, miny, maxx, maxy = df.to_crs(4326).total_bounds
+        bbox = ((minx + maxx) / 2,
+                (miny + maxy) / 2,
+                max(maxx - minx, maxy - miny) + 0.1)
 
-    pois = ox.geometries.geometries_from_bbox(maxy + eps, miny - eps, maxx + eps, minx + eps, tags=tags)
+    pois = access.get_pois_fast(bbox=bbox, tags=tags)
     print(f"Number of pois: {len(pois)}")
 
     return df.geometry.apply(pois.distance).min(axis=1)
