@@ -49,17 +49,13 @@ def geo_plot(df, *, label=None):
     bokeh.plotting.show(p)
 
 
-def get_distances_from_closest_poi(df, *, tags=None, bbox=None):
-    if bbox is None:
-        minx, miny, maxx, maxy = df.to_crs(4326).total_bounds
-        bbox = ((miny + maxy) / 2,
-                (minx + maxx) / 2,
-                max(maxx - minx, maxy - miny) + 0.1)
+def get_bbox_around(df, *, padding=0.1):
+    minx, miny, maxx, maxy = df.to_crs(4326).total_bounds
+    return (miny + maxy) / 2, (minx + maxx) / 2, max(maxx - minx, maxy - miny) + padding
 
-    pois = access.get_pois_fast(bbox=bbox, tags=tags)
-    print(f"Number of pois: {len(pois)}")
 
-    return df.geometry.apply(pois.distance).min(axis=1)
+def get_distances_from_closest(df, targets):
+    return df.geometry.apply(targets.distance).min(axis=1)
 
 
 def data():
