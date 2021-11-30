@@ -268,14 +268,10 @@ def get_pois_fast(*, bbox=None, tags=None):
         (minx, miny, maxx, maxy) = (50.0, -11.0, 63.0, 2.0)
 
     query_bbox = f"{minx},{miny},{maxx},{maxy}"
-    query_tag_only = ";".join(f"node[\"{key}\"=\"{val}\"]({query_bbox})"
-                              for key, val in tags.items() if type(val) is str)
-    query_tag_val = ";".join(f"node[\"{key}\"]({query_bbox})"
-                             for key, val in tags.items() if val is True)
-    if query_tag_only and query_tag_val:
-        query = f"({query_tag_only};{query_tag_val})"
-    else:
-        query = f"({query_tag_only}{query_tag_val})"
+    query_tag_only = "".join(f"node[\"{key}\"=\"{val}\"]({query_bbox});"
+                             for key, val in tags.items() if type(val) is str)
+    query_tag_val = "".join(f"node[\"{key}\"]({query_bbox});"
+                            for key, val in tags.items() if val is True)
 
-    pois = overpass.API().Get(query)
+    pois = overpass.API().Get(f"({query_tag_only}{query_tag_val})")
     return geopandas.GeoDataFrame.from_features(pois['features'], crs=4326)
