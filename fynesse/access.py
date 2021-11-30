@@ -229,20 +229,17 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
 
     if bbox:
         (lat, lon, dist) = bbox
-        conditions.append(f"""
-            lattitude > {lat - dist / 2} AND
-            lattitude < {lat + dist / 2} AND
-            longitude > {lon - dist / 2} AND
-            longitude < {lon + dist / 2}
-        """)
+        conditions.append(f"lattitude > {lat - dist / 2}")
+        conditions.append(f"lattitude < {lat + dist / 2}")
+        conditions.append(f"longitude > {lon - dist / 2}")
+        conditions.append(f"longitude < {lon + dist / 2}")
 
     if sold_after:
-        raise NotImplementedError
+        conditions.append(f"date_of_transfer >= {sold_after}")
 
     if sold_before:
-        raise NotImplementedError
+        conditions.append(f"date_of_transfer <= {sold_before}")
 
-    # TODO: can expand to all columns
     houses = connection.query(f"""
             SELECT pp_data.*, lattitude, longitude
             FROM pp_data
