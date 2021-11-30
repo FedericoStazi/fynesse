@@ -263,7 +263,6 @@ def get_districts(connection):
     return geopandas.GeoDataFrame(districts, crs=4326)
 
 
-
 def get_pois(*, bbox, tags=None):
     (lat, lon, dist) = bbox
     return ox.geometries_from_point((lat, lon), dist=dist, tags=tags)
