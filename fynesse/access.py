@@ -11,7 +11,6 @@ import geopandas
 import osmnx as ox
 import overpass
 
-
 # This file accesses the data
 
 """
@@ -249,6 +248,20 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
         """)
     houses["geometry"] = houses[["longitude", "lattitude"]].apply(shapely.geometry.Point, axis=1)
     return geopandas.GeoDataFrame(houses, crs=4326)
+
+
+def get_districts(connection):
+    districts = connection.query("""
+        SELECT 
+            postcode_district AS district, 
+            AVG(lattitude) as lattitude, 
+            AVG(longitude) as longitude FROM postcode_data
+        WHERE postcode_district != "" AND status = "live"
+        GROUP BY district
+    """)
+    districts["geometry"] = districts[["longitude", "lattitude"]].apply(shapely.geometry.Point, axis=1)
+    return geopandas.GeoDataFrame(districts, crs=4326)
+
 
 
 def get_pois(*, bbox, tags=None):
