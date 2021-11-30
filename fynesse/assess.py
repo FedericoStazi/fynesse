@@ -27,10 +27,27 @@ Ensure that date formats are correct and correctly time-zoned.
 def geo_plot(df, *, label=None):
     df_t = df.to_crs(3857)
     bokeh.io.output_notebook()
-    p = bokeh.plotting.figure(x_axis_type="mercator", y_axis_type="mercator")
-    tooltips = df_t[label] if label else None
-    p.circle(df_t.geometry.centroid.x, df_t.geometry.centroid.y, size=5, alpha=0.7, tooltips=tooltips)
+
+    if label:
+        source = bokeh.plotting.ColumnDataSource(data=dict(
+            x=df_t.geometry.centroid.x,
+            y=df_t.geometry.centroid.y,
+            name=df_t[label],
+        ))
+    else:
+        source = bokeh.plotting.ColumnDataSource(data=dict(
+            x=df_t.geometry.centroid.x,
+            y=df_t.geometry.centroid.y,
+        ))
+
+    p = bokeh.plotting.figure(
+        width=600, height=600, tooltips=[("name", "@name")],
+        x_axis_type="mercator", y_axis_type="mercator",
+        tools="pan,wheel_zoom")
+
     p.add_tile(bokeh.tile_providers.get_provider(bokeh.tile_providers.CARTODBPOSITRON))
+    p.circle('x', 'y', size=10, alpha=0.7, source=source)
+
     bokeh.plotting.show(p)
 
 
