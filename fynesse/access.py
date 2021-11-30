@@ -9,6 +9,7 @@ import pandas as pd
 import shapely
 import geopandas
 import osmnx as ox
+import overpass
 
 
 # This file accesses the data
@@ -256,3 +257,22 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
 def get_pois(*, bbox, tags=None):
     (lat, lon, dist) = bbox
     return ox.geometries_from_point((lat, lon), dist=dist, tags=tags)
+
+
+def get_pois_fast(*, bbox=None, tags=None):
+    if bbox:
+        (lat, lon, dist) = bbox
+        (minx, miny, maxx, maxy) = (lat - dist, lon - dist,
+                                    lat + dist, lon + dist)
+    else:
+        (minx, miny, maxx, maxy) = (50.0, -11.0, 63.0, 2.0)
+
+    query_bbox = f"{minx},{miny},{maxx},{maxy}"
+    query_tag_only = ";".join(f"node[\"{key}\"=\"{val}\"]({query_bbox})"
+                              for key, val in tags.items() if type(val) is str)
+    query_tag_val = ";".join(f"node[\"{key}\"]({query_bbox})"
+                             for key, val in tags.items() if val is True)
+    query = f"({query_tag_only};{query_tag_val})"
+
+    pois = overpass.API().Get(query)
+    return geopandas.GeoDataFrame.from_features(pois['features'], crs=4326)
