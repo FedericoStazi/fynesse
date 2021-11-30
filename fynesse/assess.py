@@ -30,9 +30,9 @@ def geo_plot(df, *, label=None):
         source = bokeh.plotting.ColumnDataSource(data=dict(
             x=df_t.geometry.centroid.x,
             y=df_t.geometry.centroid.y,
-            name=df_t[label],
+            label=df_t[label],
         ))
-        tooltips = [(label, "@" + label)]
+        tooltips = [(label, "@label")]
     else:
         source = bokeh.plotting.ColumnDataSource(data=dict(
             x=df_t.geometry.centroid.x,
