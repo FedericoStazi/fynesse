@@ -45,6 +45,23 @@ def assess_dataframe(df, *, enumerations=None, dates=None):
         print(f"Column \"{col}\" contains dates from {df[col].min()} to {df[col].max()}.")
 
 
+def hist_plot(h, *, name_h="", title="", bins=10000):
+    bokeh.io.output_notebook()
+
+    ht = ((h - h.min()) / (h.max() - h.min()) * bins).astype(int)
+
+    x = pd.Series(range(0, bins)) / bins * (h.max() - h.min()) + h.min()
+    y = pd.Series((ht == i).sum() / bins for i in range(0, bins))
+
+    p = bokeh.plotting.figure(title=title, width=600, height=600)
+
+    p.line(x, y, line_width=2)
+
+    p.xaxis.axis_label = name_h
+
+    bokeh.plotting.show(p)
+
+
 def geo_plot(df, *, label=None):
     df_t = df.to_crs(3857)
     bokeh.io.output_notebook()
