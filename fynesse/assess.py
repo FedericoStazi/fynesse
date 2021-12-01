@@ -6,6 +6,7 @@ import pandas as pd
 import bokeh.io
 import bokeh.plotting
 import bokeh.tile_providers
+import bokeh.palettes
 
 """These are the types of import we might expect in this file
 import pandas
@@ -55,32 +56,58 @@ def assess_dataframe(df, *, enumerations=None, dates=None):
         print(f"Column \"{col}\" contains dates from {df[col].min()} to {df[col].max()}.")
 
 
-def hist_plot(h, *, name_h="", title="", bins=10000):
-    """ Plot the distribution of a series
-        :param h: the series
-        :param name_h: the name of the x-axis on the plot
+def line_plot(x, y, *, name_x="", name_y="", title=""):
+    """ The plot of a line of lines
+        :param x: the x coordinates
+        :param y: the y coordinates
+        :param name_x: the name of the x-axis on the plot
+        :param name_y: the name of the y-axis on the plot
         :param title: the name of the plot
-        :param bins: the number of bins
     """
-
-    bokeh.io.output_notebook()
-
-    ht = ((h - h.min()) / (h.max() - h.min()) * bins).astype(int)
-
-    x = pd.Series(range(0, bins)) / bins * (h.max() - h.min()) + h.min()
-    y = pd.Series((ht == i).sum() / bins for i in range(0, bins))
 
     p = bokeh.plotting.figure(title=title, width=600, height=600)
 
     p.line(x, y, line_width=2)
 
+    p.xaxis.axis_label = name_x
+    p.yaxis.axis_label = name_y
+
+    return p
+
+
+def hist_plot(h, *, groups=None, name_h="", title="", bins=10000):
+    """ The plot of a distribution of a series or group of series
+        :param h: the series
+        :param groups: the grouping of data
+        :param name_h: the name of the x-axis on the plot
+        :param title: the name of the plot
+        :param bins: the number of bins
+    """
+
+    p = bokeh.plotting.figure(title=title, width=600, height=600)
+
+    ht = ((h - h.min()) / (h.max() - h.min()) * bins).astype(int)
+    x = pd.Series(range(0, bins)) / bins * (h.max() - h.min()) + h.min()
+
+    if groups is None:
+        y = pd.Series((ht == i).sum() / bins for i in range(0, bins))
+        p.line(x, y, line_width=2)
+    else:
+        idx = 0
+        for (gl, gh) in ht.groupby(groups):
+            gy = pd.Series((gh == i).sum() / bins for i in range(0, bins))
+            p.line(x, gy, line_width=2, color=bokeh.palettes.Category10[10][idx], legend_label=gl)
+            idx += 1
+        p.legend.location = "top_right"
+        p.legend.click_policy = "hide"
+
     p.xaxis.axis_label = name_h
 
-    bokeh.plotting.show(p)
+    return p
 
 
 def scatter_plot(x, y, *, name_x="", name_y="", title="", line_diagonal=False, line_horizontal=False):
-    """ Plot 2D points
+    """ The scatter plot of 2D points
         :param x: the x coordinates
         :param y: the y coordinates
         :param name_x: the name of the x-axis on the plot
@@ -89,8 +116,6 @@ def scatter_plot(x, y, *, name_x="", name_y="", title="", line_diagonal=False, l
         :param line_diagonal: if true, plots a line y = x
         :param line_horizontal: if true, plots a line y = 0
     """
-
-    bokeh.io.output_notebook()
 
     p = bokeh.plotting.figure(title=title, width=600, height=600)
     p.circle(x, y, size=2, alpha=0.7)
@@ -103,17 +128,16 @@ def scatter_plot(x, y, *, name_x="", name_y="", title="", line_diagonal=False, l
     p.xaxis.axis_label = name_x
     p.yaxis.axis_label = name_y
 
-    bokeh.plotting.show(p)
+    return p
 
 
 def geo_plot(df, *, label=None):
-    """ Plot a GeoDataFrame
+    """ The plot of a GeoDataFrame
         :param df: the GeoDataFrame
         :param label: the name of the column containing the labels
     """
 
     df_t = df.to_crs(3857)
-    bokeh.io.output_notebook()
 
     if label:
         source = bokeh.plotting.ColumnDataSource(data=dict(
@@ -137,7 +161,15 @@ def geo_plot(df, *, label=None):
     p.add_tile(bokeh.tile_providers.get_provider(bokeh.tile_providers.CARTODBPOSITRON))
     p.circle('x', 'y', size=10, alpha=0.7, source=source)
 
-    bokeh.plotting.show(p)
+    return p
+
+
+def show(plots):
+    """ Shows a list of plots arranged horizontally
+    :param plots: the list of plots
+    """
+    bokeh.io.output_notebook()
+    bokeh.plotting.show(bokeh.layouts.row(*plots))
 
 
 def get_bbox_around(df, *, padding=0.1):
