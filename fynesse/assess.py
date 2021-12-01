@@ -23,6 +23,28 @@ Ensure that date formats are correct and correctly time-zoned.
 """
 
 
+def assess_dataframe(df, *, enumerations=None, dates=None):
+    if enumerations is None:
+        enumerations = []
+    if dates is None:
+        dates = []
+
+    print(f"The number of rows is: {len(df.index)}.")
+
+    is_na = df.isna().any()
+    if is_na.any():
+        cols = " ".join(f"\"{col}\"" for col in df.columns[is_na])
+        print(f"These columns have missing elements (NaN): {cols}.")
+    else:
+        print(f"No column has missing elements (NaN).")
+
+    for col in enumerations:
+        print(f"Column \"{col}\" only contains: {df[col].unique()}.")
+
+    for col in dates:
+        print(f"Column \"{col}\" contains dates from {df[col].min()} to {df[col].max()}.")
+
+
 def geo_plot(df, *, label=None):
     df_t = df.to_crs(3857)
     bokeh.io.output_notebook()
