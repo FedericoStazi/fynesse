@@ -24,13 +24,21 @@ Ensure that date formats are correct and correctly time-zoned.
 
 
 def assess_dataframe(df, *, enumerations=None, dates=None):
+    """ Performs multiple checks on the dataframe to quickly identify potential issues
+    :param df: the dataframe
+    :param enumerations: a list of strings, the columns that are expected to be enumerations
+    :param dates: a list of strings, the columns that are expected to be strings
+    """
+
     if enumerations is None:
         enumerations = []
     if dates is None:
         dates = []
 
+    # Check 1: number or rows (to avoid empty dataframes or other construction issues)
     print(f"The number of rows is: {len(df.index)}.")
 
+    # Check 2: columns containing NaN (to avoid errors with operations later)
     is_na = df.isna().any()
     if is_na.any():
         cols = " ".join(f"\"{col}\"" for col in df.columns[is_na])
@@ -38,14 +46,23 @@ def assess_dataframe(df, *, enumerations=None, dates=None):
     else:
         print(f"No column has missing elements (NaN).")
 
+    # Check 3: elements in an enumeration (to avoid issues with elements that should not be in the enumeration)
     for col in enumerations:
         print(f"Column \"{col}\" only contains: {df[col].unique()}.")
 
+    # Check 4: dates (to avoid issues with the date format and date range)
     for col in dates:
         print(f"Column \"{col}\" contains dates from {df[col].min()} to {df[col].max()}.")
 
 
 def hist_plot(h, *, name_h="", title="", bins=10000):
+    """ Plot the distribution of a series
+        :param h: the series
+        :param name_h: the name of the x-axis on the plot
+        :param title: the name of the plot
+        :param bins: the number of bins
+    """
+
     bokeh.io.output_notebook()
 
     ht = ((h - h.min()) / (h.max() - h.min()) * bins).astype(int)
@@ -63,6 +80,16 @@ def hist_plot(h, *, name_h="", title="", bins=10000):
 
 
 def scatter_plot(x, y, *, name_x="", name_y="", title="", line_diagonal=False, line_horizontal=False):
+    """ Plot 2D points
+        :param x: the x coordinates
+        :param y: the y coordinates
+        :param name_x: the name of the x-axis on the plot
+        :param name_y: the name of the y-axis on the plot
+        :param title: the name of the plot
+        :param line_diagonal: if true, plots a line y = x
+        :param line_horizontal: if true, plots a line y = 0
+    """
+
     bokeh.io.output_notebook()
 
     p = bokeh.plotting.figure(title=title, width=600, height=600)
@@ -80,6 +107,11 @@ def scatter_plot(x, y, *, name_x="", name_y="", title="", line_diagonal=False, l
 
 
 def geo_plot(df, *, label=None):
+    """ Plot a GeoDataFrame
+        :param df: the GeoDataFrame
+        :param label: the name of the column containing the labels
+    """
+
     df_t = df.to_crs(3857)
     bokeh.io.output_notebook()
 
@@ -109,42 +141,23 @@ def geo_plot(df, *, label=None):
 
 
 def get_bbox_around(df, *, padding=0.1):
+    """ Returns a bbox including all points in a GeoDataFrame
+        Useful when searching for pois around a set of geometries
+        :param df: the GeoDataFrame
+        :param padding: additional padding for the bbox around the geometries
+    """
     minx, miny, maxx, maxy = df.to_crs(4326).total_bounds
     return (miny + maxy) / 2, (minx + maxx) / 2, max(maxx - minx, maxy - miny) + padding
 
 
-def get_distances_from_closest(df, targets, *, districts):
+def get_distances_from_closest(houses, targets, *, districts):
+    """ Returns a Series of distances between each house and their closest target
+        The implementation approximates the location of the houses to their postcode district
+        This reduces the complexity from O(HT) to O(H+DT) (in most cases H >> D and H >> T)
+        :param houses: the GeoDataFrame of the houses
+        :param padding: additional padding for the bbox around the geometries
+    """
     distances = districts.geometry.apply(targets.distance).min(axis=1).to_frame(name="__distances__")
     district_distances = districts.join(distances)
     district_distances = district_distances[["district", "__distances__"]].set_index("district")
-    return df.join(district_distances, on="district")["__distances__"]
-
-
-def one_hot_encoding(df, column, *, values=None):
-    if values is None:
-        values = df[column].unique()
-    return pd.DataFrame({f"{column}_is_{val}": (df[column] == val).astype(float) for val in values})
-
-
-def data():
-    """
-    Load the data from access and ensure missing values are correctly encoded as well as indices correct, column names
-    informative, date and times correctly formatted. Return a structured data structure such as a data frame.
-    """
-    df = access.data()
-    raise NotImplementedError
-
-
-def query(data):
-    """Request user input for some aspect of the data."""
-    raise NotImplementedError
-
-
-def view(data):
-    """Provide a view of the data that allows the user to verify some aspect of its quality."""
-    raise NotImplementedError
-
-
-def labelled(data):
-    """Provide a labelled set of data ready for supervised learning."""
-    raise NotImplementedError
+    return houses.join(district_distances, on="district")["__distances__"]
