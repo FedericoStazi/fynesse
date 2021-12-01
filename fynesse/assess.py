@@ -155,7 +155,8 @@ def get_distances_from_closest(houses, targets, *, districts):
         The implementation approximates the location of the houses to their postcode district
         This reduces the complexity from O(HT) to O(H+DT) (in most cases H >> D and H >> T)
         :param houses: the GeoDataFrame of the houses
-        :param padding: additional padding for the bbox around the geometries
+        :param targets: the GeoDataFrame of targets
+        :param districts: the GeoDataFrame of districts for optimization
     """
     distances = districts.geometry.apply(targets.distance).min(axis=1).to_frame(name="__distances__")
     district_distances = districts.join(distances)
