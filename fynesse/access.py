@@ -143,7 +143,7 @@ class PPDataTable:
             CREATE INDEX `pp.postcode` USING HASH
                 ON `pp_data`
                     (postcode);
-            CREATE INDEX `pp.date` USING HASH
+            CREATE INDEX `pp.date` USING BTREE
                 ON `pp_data` 
                     (date_of_transfer);
         """)
