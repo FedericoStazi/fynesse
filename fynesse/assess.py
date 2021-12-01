@@ -62,6 +62,23 @@ def hist_plot(h, *, name_h="", title="", bins=10000):
     bokeh.plotting.show(p)
 
 
+def scatter_plot(x, y, *, name_x="", name_y="", title="", line_diagonal=False, line_horizontal=False):
+    bokeh.io.output_notebook()
+
+    p = bokeh.plotting.figure(title=title, width=600, height=600)
+    p.circle(x, y, size=2, alpha=0.7)
+
+    if line_diagonal:
+        p.line([0, min(x.max(), y.max())], [0, min(x.max(), y.max())], line_width=2)
+    if line_horizontal:
+        p.line([0, min(x.max(), y.max())], [0, 0], line_width=2)
+
+    p.xaxis.axis_label = name_x
+    p.yaxis.axis_label = name_y
+
+    bokeh.plotting.show(p)
+
+
 def geo_plot(df, *, label=None):
     df_t = df.to_crs(3857)
     bokeh.io.output_notebook()
