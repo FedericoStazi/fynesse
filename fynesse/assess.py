@@ -24,6 +24,33 @@ Ensure that date formats are correct and correctly time-zoned.
 """
 
 
+def assess_database(connection, database):
+    """ Performs multiple checks on the database to quickly identify potential issues
+        :param connection: the connection to the database
+        :param database: the database name
+    """
+    return connection.query(f"""
+        SELECT table_schema, table_name, table_rows, index_length, create_time, update_time, table_collation, temporary
+        FROM information_schema.tables 
+        WHERE table_schema="{database}"
+    """)
+
+
+def assess_table(connection, database, table):
+    """ Performs multiple checks on the table to quickly identify potential issues
+        :param connection: the connection to the database
+        :param database: the database name
+        :param database: the table name
+    """
+    return connection.query(f"""
+        SELECT table_schema, table_name, column_name, ordinal_position, column_type, is_nullable 
+        FROM information_schema.columns col
+        JOIN information_schema.tables
+        USING (table_name, table_schema)
+        WHERE col.table_schema="{database}" AND table_name="{table}"
+    """)
+
+
 def assess_dataframe(df, *, enumerations=None, dates=None):
     """ Performs multiple checks on the dataframe to quickly identify potential issues
     :param df: the dataframe
