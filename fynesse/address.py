@@ -14,5 +14,16 @@ import tensorflow as tf
 # Or if it's a statistical analysis
 import scipy.stats"""
 
+import pandas as pd
+
 """Address a particular question that arises from the data"""
 
+def one_hot_encoding(df, column, *, values=None):
+    """ Creates a DataFrame containing one hot encodings of a column
+        :param df: the original DataFrame
+        :param column: the name of the column
+        :param values: the values column can take
+    """
+    if values is None:
+        values = df[column].unique()
+    return pd.DataFrame({f"{column}_is_{val}": (df[column] == val).astype(float) for val in values})
