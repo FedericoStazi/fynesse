@@ -22,9 +22,10 @@ Beyond the legal side also think about the ethical issues around this data.
 
 
 def credentials_interact():
-    """Create an interactive prompt for the sql username and password"""
+    """ Create an interactive prompt for the sql username and password """
 
     def write_credentials(username, password):
+        """ Internal method writing username and password to a file """
         credentials_filename = "credentials.yaml"
         with open(credentials_filename, "w") as credentials_file:
             credentials_dict = {'username': username,
@@ -72,6 +73,9 @@ class Connection:
             print(f"Error connecting to the MariaDB Server: {e}")
 
     def create_database(self, *, database):
+        """ Create a database for the MariaDB connection
+            :param database: the name of the new database
+        """
         try:
             cursor = self.connection.cursor()
             cursor.execute(f"""
@@ -88,6 +92,9 @@ class Connection:
             print(f"Error creating the database: {e}")
 
     def query(self, query):
+        """ Perform a query on this databases
+            :param query: the string of the MariaDB query
+        """
         cursor = self.connection.cursor()
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -96,10 +103,14 @@ class Connection:
 
 
 class PPDataTable:
+    """ The pp_data table in the MariaDB database
+        :param connection: the connection to the database
+    """
     def __init__(self, connection):
         self.connection = connection
 
     def create_table(self):
+        """ Create the table in the database """
         return self.connection.query(f"""
             DROP TABLE IF EXISTS `pp_data`;
             CREATE TABLE IF NOT EXISTS `pp_data` (
@@ -124,6 +135,7 @@ class PPDataTable:
         """)
 
     def create_indices(self):
+        """ Create the indices for the table """
         return self.connection.query(f"""
             ALTER TABLE `pp_data`
             ADD PRIMARY KEY (`db_id`),
@@ -137,6 +149,8 @@ class PPDataTable:
         """)
 
     def load_data(self, *, start_year=1995, end_year=2021):
+        """ Load the UK Price Paid data into the table from the gov.uk site """
+
         for year in range(start_year, end_year + 1):
             for part in range(1, 3):
                 print(f"\rLoading year {year} part {part}...", end="")
@@ -158,10 +172,14 @@ class PPDataTable:
 
 
 class PostcodeDataTable:
+    """ The postcode_data table in the MariaDB database
+        :param connection: the connection to the database
+    """
     def __init__(self, connection):
         self.connection = connection
 
     def create_table(self):
+        """ Create the table in the database """
         return self.connection.query(f"""
             DROP TABLE IF EXISTS `postcode_data`;
             CREATE TABLE IF NOT EXISTS `postcode_data` (
@@ -187,6 +205,7 @@ class PostcodeDataTable:
         """)
 
     def create_indices(self):
+        """ Create the indices for the table """
         return self.connection.query(f"""
             ALTER TABLE `postcode_data`
             DROP INDEX IF EXISTS `PRIMARY`,
@@ -199,6 +218,8 @@ class PostcodeDataTable:
         """)
 
     def load_data(self):
+        """ Load the ONS Postcode information into the table from GetTheData.com """
+
         filename = "open_postcode_geo.csv"
         url = "https://www.getthedata.com/downloads/open_postcode_geo.csv.zip"
         request.urlretrieve(url, f"{filename}.zip")
@@ -217,8 +238,20 @@ class PostcodeDataTable:
 
 
 def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_before=None):
+    """ Returns a GeoDataFrame containing houses sales data from pp_data
+        The arguments define filters on the data that should be included
+        This filters are applied directly on the database query for better performance
+        :param connection: the connection to the database
+        :param postcode: filter by postcode or its prefix (e.g. "S" matches "S1...", "S2..." but not "SW...", "SE...")
+        :param bbox: filter by the area where the house is located
+        :param sold_after: filter by the date the house was sold
+        :param sold_before: filter by the date the house was sold
+    """
+
+    # Convenient in the query if there are no other conditions
     conditions = ["TRUE"]
 
+    # Postcode filtering assumes that "S" matches "S1...", "S2..." but not "SW...", "SE..."
     if postcode:
         if postcode[-1].isdigit():
             rpostcode = f"'^{postcode}([^[:digit:]]|$)'"
@@ -258,6 +291,9 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
 
 
 def get_districts(connection):
+    """ Returns a GeoDataFrame containing data on the postcode districts
+        :param connection: the connection to the database
+    """
     districts = connection.query("""
         SELECT 
             postcode_district AS district, 
@@ -271,11 +307,22 @@ def get_districts(connection):
 
 
 def get_pois(*, bbox, tags=None):
+    """ Returns points of interest from OpenStreetMap
+        :param bbox: filters by the location of the pois
+        :param tags: filters by the tags of the pois
+    """
     (lat, lon, dist) = bbox
     return ox.geometries_from_point((lat, lon), dist=dist, tags=tags)
 
 
 def get_pois_fast(*, bbox=None, tags=None):
+    """ Returns points of interest from OpenStreetMap
+        For performance reasons (especially on queries on large geographical areas but few results)
+        this version of get_pois uses the overpass API directly
+        It should not be used excessively because many queries from the same IP will trigger some limitations
+        :param bbox: filters by the location of the pois (the entire UK is considered if not included)
+        :param tags: filters by the tags of the pois
+    """
     if bbox:
         (lat, lon, dist) = bbox
         (minx, miny, maxx, maxy) = (lat - dist, lon - dist,
