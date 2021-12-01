@@ -299,7 +299,7 @@ def get_districts(connection):
             postcode_district AS district, 
             AVG(lattitude) as lat, 
             AVG(longitude) as lon FROM postcode_data
-        WHERE postcode_district != "" AND status = "live"
+        WHERE postcode_district != ""
         GROUP BY district
     """)
     districts["geometry"] = districts[["lon", "lat"]].apply(shapely.geometry.Point, axis=1)
