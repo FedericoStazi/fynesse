@@ -241,6 +241,12 @@ class PostcodeDataTable:
         os.remove(f"{filename}.zip")
 
 
+def test_table_creation(connection, table):
+    query = connection.query(f"SELECT * FROM {table} LIMIT 1")
+    assert len(query.index), f"Empty response from {table}"
+    print("The table was created successfully")
+
+
 def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_before=None):
     """ Returns a GeoDataFrame containing houses sales data from pp_data
         The arguments define filters on the data that should be included
