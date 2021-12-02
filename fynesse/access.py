@@ -327,16 +327,18 @@ def get_houses_sample(connection, fraction):
     return geopandas.GeoDataFrame(houses, crs=4326)[["price", "date", "property_type", "district", "geometry"]]
 
 
-def get_districts(connection):
+def get_districts(connection, geo_only=True):
     """ Returns a GeoDataFrame containing data on the postcode districts
         :param connection: the connection to the database
+        :param geo_only: exclude non-geographic postcodes
     """
-    districts = connection.query("""
+    condition = "and lattitude != 0" if geo_only else "TRUE"
+    districts = connection.query(f"""
         SELECT 
             postcode_district AS district, 
             AVG(lattitude) as lat, 
             AVG(longitude) as lon FROM postcode_data
-        WHERE postcode_district != ""
+        WHERE postcode_district != "" AND {condition}
         GROUP BY district
     """).set_index("district", drop=True)
     return geopandas.GeoSeries(
