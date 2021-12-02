@@ -167,10 +167,11 @@ def scatter_plot(x, y, *, groups=None, name_x="", name_y="", title="", line_diag
     return p
 
 
-def geo_plot(df, *, labels=None):
+def geo_plot(df, *, labels=None, title=""):
     """ The plot of a GeoDataFrame
         :param df: the GeoDataFrame
         :param labels: the labels for the points
+        :param title: the name of the plot
     """
 
     df_t = df.to_crs(3857)
@@ -192,7 +193,7 @@ def geo_plot(df, *, labels=None):
     p = bokeh.plotting.figure(
         width=600, height=600, tooltips=tooltips,
         x_axis_type="mercator", y_axis_type="mercator",
-        tools="pan,wheel_zoom")
+        tools="pan,wheel_zoom", title=title)
 
     p.add_tile(bokeh.tile_providers.get_provider(bokeh.tile_providers.CARTODBPOSITRON))
     p.circle('x', 'y', size=10, alpha=0.7, source=source)
