@@ -143,10 +143,10 @@ class PPDataTable:
             ALTER TABLE `pp_data`
             ADD PRIMARY KEY (`db_id`),
             MODIFY `db_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=1;
-            CREATE INDEX `pp.postcode` USING HASH
+            CREATE INDEX `pp.postcode` USING BTREE
                 ON `pp_data`
                     (postcode);
-            CREATE INDEX `pp.date` USING BTREE
+            CREATE INDEX `pp.date_of_transfer` USING BTREE
                 ON `pp_data` 
                     (date_of_transfer);
         """)
