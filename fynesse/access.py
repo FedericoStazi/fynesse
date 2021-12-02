@@ -336,7 +336,7 @@ def get_districts(connection):
             postcode_district AS district, 
             AVG(lattitude) as lat, 
             AVG(longitude) as lon FROM postcode_data
-        WHERE postcode_district != "" and status = "live"
+        WHERE postcode_district != ""
         GROUP BY district
     """).set_index("district", drop=True)
     return geopandas.GeoSeries(
