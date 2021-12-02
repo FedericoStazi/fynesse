@@ -1,11 +1,11 @@
 setuptools>=57.0.0
-matplotlib==3.5.0
+matplotlib==3.2.2
 numpy==1.19.5
 pandas==1.1.5
 PyYAML==6.0
 ipywidgets==7.6.5
 PyMySQL==1.0.2
-osmnx==1.1.2
+osmnx==0.12
 bokeh==2.3.3
 Shapely==1.8.0
 geopandas==0.10.2
