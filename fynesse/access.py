@@ -283,18 +283,23 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
         conditions.append(f"date_of_transfer <= \"{sold_before}\"")
 
     houses = connection.query(f"""
-            SELECT 
+            SELECT                 
                 price, 
-                date_of_transfer as date, 
-                property_type as type, 
+                date_of_transfer as date,
+                property_type,
+                new_build_flag,
+                tenure_type,
                 postcode, 
                 postcode_district as district, 
+                ppd_category_type,
+                record_status,
+                pp_data.db_id,
                 lattitude as lat, 
                 longitude as lon
             FROM pp_data
             INNER JOIN postcode_data
             USING (postcode)
-            WHERE {" AND ".join(conditions)} AND status = "live"
+            WHERE {" AND ".join(conditions)}
         """)
     houses["geometry"] = houses[["lon", "lat"]].apply(shapely.geometry.Point, axis=1)
     return geopandas.GeoDataFrame(houses, crs=4326)
@@ -307,7 +312,7 @@ def get_houses_sample(connection, fraction):
         SELECT 
             price, 
             date_of_transfer as date, 
-            property_type as type, 
+            property_type, 
             postcode_district as district, 
             lattitude as lat, 
             longitude as lon
@@ -319,7 +324,7 @@ def get_houses_sample(connection, fraction):
 
     houses["geometry"] = houses[["lon", "lat"]].apply(shapely.geometry.Point, axis=1)
     houses["date"] = houses["date"].apply(days)
-    return geopandas.GeoDataFrame(houses, crs=4326)[["price", "date", "type", "district", "geometry"]]
+    return geopandas.GeoDataFrame(houses, crs=4326)[["price", "date", "property_type", "district", "geometry"]]
 
 
 def get_districts(connection):
