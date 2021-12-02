@@ -37,7 +37,7 @@ except FileNotFoundError:
     REQUIRED = []
 
 # What packages are optional?
-EXTRAS = []
+EXTRAS = {}
 
 PACKAGE_DATA = {"fynesse": ["defaults.yml"]}
 
