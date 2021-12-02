@@ -1,6 +1,9 @@
-from .config import *
-
-from fynesse import access
+""" Place commands in this file to assess the data you have downloaded.
+How are missing values encoded, how are outliers encoded?
+What do columns represent? Make sure they are correctly labeled.
+How is the data indexed. Crete visualisation routines to assess the data (e.g. in bokeh).
+Ensure that date formats are correct and correctly time-zoned.
+"""
 
 import pandas as pd
 import bokeh.io
@@ -8,26 +11,11 @@ import bokeh.plotting
 import bokeh.tile_providers
 import bokeh.palettes
 
-"""These are the types of import we might expect in this file
-import pandas
-import bokeh
-import matplotlib.pyplot as plt
-import sklearn.decomposition as decomposition
-import sklearn.feature_extraction"""
-
-"""
-Place commands in this file to assess the data you have downloaded. 
-How are missing values encoded, how are outliers encoded? 
-What do columns represent? Make sure they are correctly labeled. 
-How is the data indexed. Crete visualisation routines to assess the data (e.g. in bokeh). 
-Ensure that date formats are correct and correctly time-zoned.
-"""
-
 
 def assess_database(connection, database):
     """ Performs multiple checks on the database to quickly identify potential issues
-        :param connection: the connection to the database
-        :param database: the database name
+    :param connection: the connection to the database
+    :param database: the database name
     """
     return connection.query(f"""
         SELECT table_schema, table_name, table_rows, index_length, create_time, update_time, table_collation, temporary
@@ -38,9 +26,9 @@ def assess_database(connection, database):
 
 def assess_table(connection, database, table):
     """ Performs multiple checks on the table to quickly identify potential issues
-        :param connection: the connection to the database
-        :param database: the database name
-        :param database: the table name
+    :param connection: the connection to the database
+    :param database: the database name
+    :param table: the table name
     """
     return connection.query(f"""
         SELECT table_schema, table_name, column_name, ordinal_position, column_type, is_nullable 
@@ -85,11 +73,11 @@ def assess_dataframe(df, *, enumerations=None, dates=None):
 
 def line_plot(x, y, *, name_x="", name_y="", title=""):
     """ The plot of a line of lines
-        :param x: the x coordinates
-        :param y: the y coordinates
-        :param name_x: the name of the x-axis on the plot
-        :param name_y: the name of the y-axis on the plot
-        :param title: the name of the plot
+    :param x: the x coordinates
+    :param y: the y coordinates
+    :param name_x: the name of the x-axis on the plot
+    :param name_y: the name of the y-axis on the plot
+    :param title: the name of the plot
     """
 
     p = bokeh.plotting.figure(title=title, width=600, height=600)
@@ -104,11 +92,11 @@ def line_plot(x, y, *, name_x="", name_y="", title=""):
 
 def hist_plot(h, *, groups=None, name_h="", title="", bins=10000):
     """ The plot of a distribution of a series or group of series
-        :param h: the series
-        :param groups: the grouping of data
-        :param name_h: the name of the x-axis on the plot
-        :param title: the name of the plot
-        :param bins: the number of bins
+    :param h: the series
+    :param groups: the grouping of data
+    :param name_h: the name of the x-axis on the plot
+    :param title: the name of the plot
+    :param bins: the number of bins
     """
 
     p = bokeh.plotting.figure(title=title, width=600, height=600)
@@ -135,14 +123,14 @@ def hist_plot(h, *, groups=None, name_h="", title="", bins=10000):
 
 def scatter_plot(x, y, *, groups=None, name_x="", name_y="", title="", line_diagonal=False, line_horizontal=False):
     """ The scatter plot of 2D points
-        :param x: the x coordinates
-        :param y: the y coordinates
-        :param groups: the grouping of data
-        :param name_x: the name of the x-axis on the plot
-        :param name_y: the name of the y-axis on the plot
-        :param title: the name of the plot
-        :param line_diagonal: if true, plots a line y = x
-        :param line_horizontal: if true, plots a line y = 0
+    :param x: the x coordinates
+    :param y: the y coordinates
+    :param groups: the grouping of data
+    :param name_x: the name of the x-axis on the plot
+    :param name_y: the name of the y-axis on the plot
+    :param title: the name of the plot
+    :param line_diagonal: if true, plots a line y = x
+    :param line_horizontal: if true, plots a line y = 0
     """
 
     p = bokeh.plotting.figure(title=title, width=600, height=600)
@@ -169,9 +157,9 @@ def scatter_plot(x, y, *, groups=None, name_x="", name_y="", title="", line_diag
 
 def geo_plot(df, *, labels=None, title=""):
     """ The plot of a GeoDataFrame
-        :param df: the GeoDataFrame
-        :param labels: the labels for the points
-        :param title: the name of the plot
+    :param df: the GeoDataFrame
+    :param labels: the labels for the points
+    :param title: the name of the plot
     """
 
     df_t = df.to_crs(3857)
@@ -212,8 +200,8 @@ def show(plots):
 def get_bbox_around(df, *, padding=0.1):
     """ Returns a bbox including all points in a GeoDataFrame
         Useful when searching for pois around a set of geometries
-        :param df: the GeoDataFrame
-        :param padding: additional padding for the bbox around the geometries
+    :param df: the GeoDataFrame
+    :param padding: additional padding for the bbox around the geometries
     """
     minx, miny, maxx, maxy = df.to_crs(4326).total_bounds
     return (miny + maxy) / 2, (minx + maxx) / 2, max(maxx - minx, maxy - miny) + padding
@@ -224,7 +212,7 @@ def get_distances_from_closest(districts, targets):
         This can be used when approximating the location of the houses to their postcode district
         The approximation reduces the complexity of finding the distance between the closest target and the houses
         from O(HT) to O(H+DT) (in most cases H >> D and H >> T)
-        :param targets: the GeoDataFrame of targets
-        :param districts: the GeoDataFrame of districts for optimization
+    :param targets: the GeoDataFrame of targets
+    :param districts: the GeoDataFrame of districts for optimization
     """
     return districts.geometry.apply(targets.distance).min(axis=1)

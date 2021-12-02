@@ -1,3 +1,9 @@
+""" Place commands in this file to access the data electronically.
+Don't remove any missing values, or deal with outliers.
+Make sure you have legalities correct, both intellectual property and personal data privacy rights.
+Beyond the legal side also think about the ethical issues around this data.
+"""
+
 from .config import *
 
 import yaml
@@ -12,15 +18,6 @@ import osmnx as ox
 import overpass
 from datetime import datetime
 import math
-
-# This file accesses the data
-
-"""
-Place commands in this file to access the data electronically. 
-Don't remove any missing values, or deal with outliers. 
-Make sure you have legalities correct, both intellectual property and personal data privacy rights. 
-Beyond the legal side also think about the ethical issues around this data. 
-"""
 
 
 def credentials_interact():
@@ -44,11 +41,11 @@ def credentials_interact():
 
 class Connection:
     """ A database connection to the MariaDB database
-            specified by the host url and database name.
-        :param username: username
-        :param password: password
-        :param host: host url
-        :param port: port number
+        specified by the host url and database name.
+    :param username: username
+    :param password: password
+    :param host: host url
+    :param port: port number
     """
 
     def __init__(self, *, username, password, host, port):
@@ -76,7 +73,7 @@ class Connection:
 
     def create_database(self, *, database):
         """ Create a database for the MariaDB connection
-            :param database: the name of the new database
+        :param database: the name of the new database
         """
         try:
             cursor = self.connection.cursor()
@@ -95,7 +92,7 @@ class Connection:
 
     def query(self, query):
         """ Perform a query on this databases
-            :param query: the string of the MariaDB query
+        :param query: the string of the MariaDB query
         """
         cursor = self.connection.cursor()
         cursor.execute(query)
@@ -106,7 +103,7 @@ class Connection:
 
 class PPDataTable:
     """ The pp_data table in the MariaDB database
-        :param connection: the connection to the database
+    :param connection: the connection to the database
     """
 
     def __init__(self, connection):
@@ -176,7 +173,7 @@ class PPDataTable:
 
 class PostcodeDataTable:
     """ The postcode_data table in the MariaDB database
-        :param connection: the connection to the database
+    :param connection: the connection to the database
     """
 
     def __init__(self, connection):
@@ -193,7 +190,8 @@ class PostcodeDataTable:
             `easting` int unsigned,
             `northing` int unsigned,
             `positional_quality_indicator` int NOT NULL,
-            `country` enum('England', 'Wales', 'Scotland', 'Northern Ireland', 'Channel Islands', 'Isle of Man') NOT NULL,
+            `country` enum('England', 'Wales', 'Scotland', 'Northern Ireland', 'Channel Islands', 'Isle of Man') 
+                NOT NULL,
             `lattitude` decimal(11,8) NOT NULL,
             `longitude` decimal(10,8) NOT NULL,
             `postcode_no_space` tinytext COLLATE utf8_bin NOT NULL,
@@ -251,11 +249,11 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
     """ Returns a GeoDataFrame containing houses sales data from pp_data
         The arguments define filters on the data that should be included
         This filters are applied directly on the database query for better performance
-        :param connection: the connection to the database
-        :param postcode: filter by postcode or its prefix (e.g. "S" matches "S1...", "S2..." but not "SW...", "SE...")
-        :param bbox: filter by the area where the house is located
-        :param sold_after: filter by the date the house was sold
-        :param sold_before: filter by the date the house was sold
+    :param connection: the connection to the database
+    :param postcode: filter by postcode or its prefix (e.g. "S" matches "S1...", "S2..." but not "SW...", "SE...")
+    :param bbox: filter by the area where the house is located
+    :param sold_after: filter by the date the house was sold
+    :param sold_before: filter by the date the house was sold
     """
 
     # Convenient in the query if there are no other conditions
@@ -306,6 +304,13 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
 
 
 def get_houses_sample(connection, fraction):
+    """ Returns a GeoDataFrame containing houses sales data from pp_data
+        These are limited to the ones required for the task
+        The fraction (or sample) of data returned in the dataframe
+    :param connection: the connection to the database
+    :param fraction: the fraction of data returned in the dataframe
+    """
+
     days = lambda d: (d - datetime.strptime("1995-01-01", "%Y-%m-%d").date()).days
 
     houses = connection.query(f"""
@@ -329,8 +334,8 @@ def get_houses_sample(connection, fraction):
 
 def get_districts(connection, geo_only=True):
     """ Returns a GeoDataFrame containing data on the postcode districts
-        :param connection: the connection to the database
-        :param geo_only: exclude non-geographic postcodes
+    :param connection: the connection to the database
+    :param geo_only: exclude non-geographic postcodes
     """
     condition = "lattitude != 0" if geo_only else "TRUE"
     districts = connection.query(f"""
@@ -350,8 +355,8 @@ def get_districts(connection, geo_only=True):
 
 def get_pois(*, bbox, tags=None):
     """ Returns points of interest from OpenStreetMap
-        :param bbox: filters by the location of the pois
-        :param tags: filters by the tags of the pois
+    :param bbox: filters by the location of the pois
+    :param tags: filters by the tags of the pois
     """
     (lat, lon, dist) = bbox
     return ox.geometries_from_point((lat, lon), dist=dist * 111000.0, tags=tags)
@@ -362,8 +367,8 @@ def get_pois_fast(*, bbox=None, tags=None):
         For performance reasons (especially on queries on large geographical areas but few results)
         this version of get_pois uses the overpass API directly
         It should not be used excessively because many queries from the same IP will trigger some limitations
-        :param bbox: filters by the location of the pois (the entire UK is considered if not included)
-        :param tags: filters by the tags of the pois
+    :param bbox: filters by the location of the pois (the entire UK is considered if not included)
+    :param tags: filters by the tags of the pois
     """
     if bbox:
         (lat, lon, dist) = bbox
