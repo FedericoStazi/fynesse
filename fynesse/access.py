@@ -10,6 +10,8 @@ import shapely
 import geopandas
 import osmnx as ox
 import overpass
+import datetime
+import math
 
 # This file accesses the data
 
@@ -106,6 +108,7 @@ class PPDataTable:
     """ The pp_data table in the MariaDB database
         :param connection: the connection to the database
     """
+
     def __init__(self, connection):
         self.connection = connection
 
@@ -175,6 +178,7 @@ class PostcodeDataTable:
     """ The postcode_data table in the MariaDB database
         :param connection: the connection to the database
     """
+
     def __init__(self, connection):
         self.connection = connection
 
@@ -288,6 +292,29 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
         """)
     houses["geometry"] = houses[["lon", "lat"]].apply(shapely.geometry.Point, axis=1)
     return geopandas.GeoDataFrame(houses, crs=4326)
+
+
+def get_houses_sample(connection, fraction):
+    days = lambda d: (d - datetime.strptime("1995-01-01", "%Y-%m-%d").date()).days
+
+    houses = connection.query(f"""
+        SELECT 
+            price, 
+            date_of_transfer as date, 
+            property_type as type, 
+            postcode_district as district, 
+            lattitude as lat, 
+            longitude as lon
+        FROM pp_data
+        INNER JOIN postcode_data
+        USING (postcode)
+        WHERE pp_data.db_id % {math.ceil(1 / fraction)} = 0
+            AND status = "live"
+    """)
+
+    houses["geometry"] = houses[["lon", "lat"]].apply(shapely.geometry.Point, axis=1)
+    houses["date"] = houses["date"].apply(days)
+    return geopandas.GeoDataFrame(houses, crs=4326)[["price", "date", "type", "district", "geometry"]]
 
 
 def get_districts(connection):
