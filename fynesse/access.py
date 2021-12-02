@@ -267,7 +267,7 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
             rpostcode = f"'^{postcode}([^[:digit:]]|$)'"
         else:
             rpostcode = f"'^{postcode}([^[:alpha:]]|$)'"
-        conditions.append(f"pp_data.postcode RLIKE {rpostcode}")
+        conditions.append(f"""pp_data.postcode LIKE "{postcode}%" AND pp_data.postcode RLIKE {rpostcode}""")
 
     if bbox:
         (lat, lon, dist) = bbox
