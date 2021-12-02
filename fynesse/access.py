@@ -4,8 +4,7 @@ Make sure you have legalities correct, both intellectual property and personal d
 Beyond the legal side also think about the ethical issues around this data.
 """
 
-from .config import *
-
+import os
 import yaml
 from ipywidgets import interact_manual, Text, Password
 import pymysql
@@ -237,12 +236,6 @@ class PostcodeDataTable:
 
         os.remove(filename)
         os.remove(f"{filename}.zip")
-
-
-def test_table_creation(connection, table):
-    query = connection.query(f"SELECT * FROM {table} LIMIT 1")
-    assert len(query.index), f"Empty response from {table}"
-    print("The table was created successfully")
 
 
 def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_before=None):
