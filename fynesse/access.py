@@ -354,7 +354,7 @@ def get_pois(*, bbox, tags=None):
         :param tags: filters by the tags of the pois
     """
     (lat, lon, dist) = bbox
-    return ox.geometries_from_point((lat, lon), dist=dist, tags=tags)
+    return ox.geometries_from_point((lat, lon), dist=dist/111.0, tags=tags)
 
 
 def get_pois_fast(*, bbox=None, tags=None):
