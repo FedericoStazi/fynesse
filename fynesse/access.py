@@ -10,7 +10,7 @@ import shapely
 import geopandas
 import osmnx as ox
 import overpass
-import datetime
+from datetime import datetime
 import math
 
 # This file accesses the data
