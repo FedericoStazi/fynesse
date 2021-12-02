@@ -308,8 +308,7 @@ def get_houses_sample(connection, fraction):
         FROM pp_data
         INNER JOIN postcode_data
         USING (postcode)
-        WHERE pp_data.db_id % {math.ceil(1 / fraction)} = 0
-            AND status = "live"
+        WHERE pp_data.db_id % {math.ceil(1 / fraction)} = 0 AND status = "live"
     """)
 
     houses["geometry"] = houses[["lon", "lat"]].apply(shapely.geometry.Point, axis=1)
