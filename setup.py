@@ -32,7 +32,8 @@ here = os.path.abspath(os.path.dirname(__file__))
 # What packages are required for this module to be executed?
 try:
     with io.open(os.path.join(here, "requirements.txt"), encoding="utf-8") as f:
-        REQUIRED = f.readlines()
+        REQUIRED = []
+        # REQUIRED = f.readlines()
 except FileNotFoundError:
     REQUIRED = []
 
