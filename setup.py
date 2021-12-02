@@ -4,7 +4,9 @@
 # This setup format based on that by Navdeep Gill <https://www.linkedin.com/in/navdeep-gill-b1729456/>
 # https://github.com/navdeep-G/setup.py
 
-# Changes by Neil D. Lawrence for fynesse template
+# Changes by Neil D. Lawrence for fynesse template, https://github.com/lawrennd/fynesse_template
+
+# Changes by Federico Stazi for the prediction of house prices
 
 # Note: To use the 'upload' functionality of this file, you must:
 #   $ pipenv install twine --dev
@@ -18,8 +20,8 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = "fynesse"
-DESCRIPTION = "Template files for performing fynesse pipeline data analysis with python."
-URL = "https://github.com/lawrennd/fynesse_template"
+DESCRIPTION = "Fynesse pipeline for the prediction of house prices."
+URL = "https://github.com/FedericoStazi/fynesse"
 EMAIL = "emal@domain.here"
 AUTHOR = "Givenname Familyname"
 REQUIRES_PYTHON = ">=3.6.0"
