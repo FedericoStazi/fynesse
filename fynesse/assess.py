@@ -133,10 +133,11 @@ def hist_plot(h, *, groups=None, name_h="", title="", bins=10000):
     return p
 
 
-def scatter_plot(x, y, *, name_x="", name_y="", title="", line_diagonal=False, line_horizontal=False):
+def scatter_plot(x, y, *, groups=None, name_x="", name_y="", title="", line_diagonal=False, line_horizontal=False):
     """ The scatter plot of 2D points
         :param x: the x coordinates
         :param y: the y coordinates
+        :param groups: the grouping of data
         :param name_x: the name of the x-axis on the plot
         :param name_y: the name of the y-axis on the plot
         :param title: the name of the plot
@@ -145,7 +146,15 @@ def scatter_plot(x, y, *, name_x="", name_y="", title="", line_diagonal=False, l
     """
 
     p = bokeh.plotting.figure(title=title, width=600, height=600)
-    p.circle(x, y, size=2, alpha=0.7)
+    if groups is None:
+        p.circle(x, y, size=2, alpha=0.7)
+    else:
+        idx = 0
+        for (gl, gx), (_, gy) in zip(x.groupby(groups), y.groupby(groups)):
+            p.circle(gx, gy, size=2, alpha=0.7, color=bokeh.palettes.Category10[10][idx], legend_label=gl)
+            idx += 1
+        p.legend.location = "top_right"
+        p.legend.click_policy = "hide"
 
     if line_diagonal:
         p.line([0, min(x.max(), y.max())], [0, min(x.max(), y.max())], line_width=2)
