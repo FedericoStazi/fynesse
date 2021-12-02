@@ -15,8 +15,10 @@ import tensorflow as tf
 import scipy.stats"""
 
 import pandas as pd
+import numpy as np
 
 """Address a particular question that arises from the data"""
+
 
 def one_hot_encoding(df, column, *, values=None):
     """ Creates a DataFrame containing one hot encodings of a column
@@ -27,3 +29,10 @@ def one_hot_encoding(df, column, *, values=None):
     if values is None:
         values = df[column].unique()
     return pd.DataFrame({f"{column}_is_{val}": (df[column] == val).astype(float) for val in values})
+
+
+def make_design(columns, data):
+    design = []
+    for col in columns:
+        design.append(data[col].values.reshape(-1, 1))
+    return np.concatenate(design, axis=1)
