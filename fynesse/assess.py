@@ -6,7 +6,10 @@ Ensure that date formats are correct and correctly time-zoned.
 """
 
 import pandas as pd
-import bokeh
+import bokeh.io
+import bokeh.plotting
+import bokeh.tile_providers
+import bokeh.palettes
 
 
 def assess_database(connection, database):
