@@ -167,27 +167,27 @@ def scatter_plot(x, y, *, groups=None, name_x="", name_y="", title="", line_diag
     return p
 
 
-def geo_plot(df, *, label=None):
+def geo_plot(df, *, labels=None):
     """ The plot of a GeoDataFrame
         :param df: the GeoDataFrame
-        :param label: the name of the column containing the labels
+        :param labels: the labels for the points
     """
 
     df_t = df.to_crs(3857)
 
-    if label:
-        source = bokeh.plotting.ColumnDataSource(data=dict(
-            x=df_t.geometry.centroid.x,
-            y=df_t.geometry.centroid.y,
-            label=df_t[label],
-        ))
-        tooltips = [(label, "@label")]
-    else:
+    if labels is None:
         source = bokeh.plotting.ColumnDataSource(data=dict(
             x=df_t.geometry.centroid.x,
             y=df_t.geometry.centroid.y,
         ))
         tooltips = None
+    else:
+        source = bokeh.plotting.ColumnDataSource(data=dict(
+            x=df_t.geometry.centroid.x,
+            y=df_t.geometry.centroid.y,
+            name=labels,
+        ))
+        tooltips = [("name", "@name")]
 
     p = bokeh.plotting.figure(
         width=600, height=600, tooltips=tooltips,
