@@ -19,6 +19,16 @@ from datetime import datetime
 import math
 
 
+def test_table_creation(connection, table):
+    """ Tests if the table was created and can be accessed
+    :param connection: the connection to the database
+    :param table: the table name
+    """
+    query = connection.query(f"SELECT * FROM {table} LIMIT 1")
+    assert len(query.index), f"Empty response from {table}"
+    print("The table was created successfully")
+
+
 def credentials_interact():
     """ Create an interactive prompt for the sql username and password """
 
