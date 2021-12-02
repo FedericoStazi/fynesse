@@ -284,7 +284,7 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
             FROM pp_data
             INNER JOIN postcode_data
             USING (postcode)
-            WHERE {" AND ".join(conditions)}
+            WHERE {" AND ".join(conditions)} AND status = "live"
         """)
     houses["geometry"] = houses[["lon", "lat"]].apply(shapely.geometry.Point, axis=1)
     return geopandas.GeoDataFrame(houses, crs=4326)
