@@ -27,15 +27,17 @@ AUTHOR = "Givenname Familyname"
 REQUIRES_PYTHON = ">=3.6.0"
 VERSION = "0.1.0"
 
+here = os.path.abspath(os.path.dirname(__file__))
+
 # What packages are required for this module to be executed?
-REQUIRED = [
-    "pandas", "numpy", "jupyter", "matplotlib", 
-]
+try:
+    with io.open(os.path.join(here, "requirements.txt"), encoding="utf-8") as f:
+        REQUIRED = f.readlines()
+except FileNotFoundError:
+    REQUIRED = []
 
 # What packages are optional?
-EXTRAS = {
-    "interactive html plots": ["bokeh",],
-}
+EXTRAS = []
 
 PACKAGE_DATA = {"fynesse": ["defaults.yml"]}
 
@@ -44,7 +46,6 @@ PACKAGE_DATA = {"fynesse": ["defaults.yml"]}
 # Except, perhaps the License and Trove Classifiers!
 # If you do change the License, remember to change the Trove Classifier for that!
 
-here = os.path.abspath(os.path.dirname(__file__))
 
 # Import the README and use it as the long-description.
 # Note: this will only work if "README.md" is present in your MANIFEST.in file!
