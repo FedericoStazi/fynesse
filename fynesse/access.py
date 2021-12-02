@@ -332,7 +332,7 @@ def get_districts(connection, geo_only=True):
         :param connection: the connection to the database
         :param geo_only: exclude non-geographic postcodes
     """
-    condition = "and lattitude != 0" if geo_only else "TRUE"
+    condition = "lattitude != 0" if geo_only else "TRUE"
     districts = connection.query(f"""
         SELECT 
             postcode_district AS district, 
