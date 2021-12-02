@@ -301,9 +301,12 @@ def get_districts(connection):
             AVG(longitude) as lon FROM postcode_data
         WHERE postcode_district != ""
         GROUP BY district
-    """)
-    districts["geometry"] = districts[["lon", "lat"]].apply(shapely.geometry.Point, axis=1)
-    return geopandas.GeoDataFrame(districts, crs=4326)
+    """).set_index("district", drop=True)
+    return geopandas.GeoSeries(
+        data=districts[["lon", "lat"]].apply(shapely.geometry.Point, axis=1),
+        index=districts.index,
+        crs=4326
+    )
 
 
 def get_pois(*, bbox, tags=None):
