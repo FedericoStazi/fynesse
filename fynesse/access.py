@@ -13,7 +13,6 @@ from zipfile import ZipFile
 import pandas as pd
 import shapely
 import geopandas
-import osmnx as ox
 import overpass
 from datetime import datetime
 import math
@@ -356,21 +355,11 @@ def get_districts(connection, geo_only=True):
     )
 
 
-def get_pois(*, bbox, tags=None):
-    """ Returns points of interest from OpenStreetMap
-    :param bbox: filters by the location of the pois
-    :param tags: filters by the tags of the pois
-    """
-    (lat, lon, dist) = bbox
-    return ox.geometries_from_point((lat, lon), dist=dist * 111000.0, tags=tags)
-
-
-def get_pois_fast(*, bbox=None, tags=None):
+def get_pois(*, bbox=None, tags=None):
     """ Returns points of interest from OpenStreetMap
         For performance reasons (especially on queries on large geographical areas but few results)
-        this version of get_pois uses the overpass API directly
-        It should not be used excessively because many queries from the same IP will trigger some limitations
-    :param bbox: filters by the location of the pois (the entire UK is considered if not included)
+        it uses the overpass API directly, instead of osmnx
+    :param bbox: filters by the location of the pois (by default the entire UK)
     :param tags: filters by the tags of the pois
     """
     if bbox:
@@ -381,10 +370,13 @@ def get_pois_fast(*, bbox=None, tags=None):
         (minx, miny, maxx, maxy) = (50.0, -11.0, 63.0, 2.0)
 
     query_bbox = f"{minx},{miny},{maxx},{maxy}"
-    query_tag_only = "".join(f"node[\"{key}\"=\"{val}\"]({query_bbox});"
-                             for key, val in tags.items() if type(val) is str)
-    query_tag_val = "".join(f"node[\"{key}\"]({query_bbox});"
-                            for key, val in tags.items() if val is True)
+    queries = []
+    for t in ["node", "way", "relation"]:
+        query_tag_only = "".join(f"{t}[\"{key}\"=\"{val}\"]({query_bbox});"
+                                 for key, val in tags.items() if type(val) is str)
+        query_tag_val = "".join(f"{t}[\"{key}\"]({query_bbox});"
+                                for key, val in tags.items() if val is True)
+        queries.append(f"{query_tag_only}{query_tag_val}")
 
-    pois = overpass.API(max_retry_count=10, retry_timeout=5).Get(f"({query_tag_only}{query_tag_val})")
+    pois = overpass.API(max_retry_count=10, retry_timeout=5).Get("(" + "".join(queries) + ")")
     return geopandas.GeoDataFrame.from_features(pois['features'], crs=4326)
