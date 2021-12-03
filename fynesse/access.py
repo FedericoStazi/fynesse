@@ -301,6 +301,10 @@ def get_houses(connection, *, postcode=None, bbox=None, sold_after=None, sold_be
             USING (postcode)
             WHERE {" AND ".join(conditions)}
         """)
+
+    if len(houses.index) == 0:
+        return geopandas.GeoDataFrame(crs=4326)
+
     houses["geometry"] = houses[["lon", "lat"]].apply(shapely.geometry.Point, axis=1)
     return geopandas.GeoDataFrame(houses, crs=4326)
 
