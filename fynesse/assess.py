@@ -207,12 +207,10 @@ def get_bbox_around(df, *, padding=0.1):
     return (miny + maxy) / 2, (minx + maxx) / 2, max(maxx - minx, maxy - miny) + padding
 
 
-def get_distances_from_closest(districts, targets):
-    """ Returns a Series of distances between each district and their closest target
+def get_distances_from_closest(sources, targets):
+    """ Returns a Series of distances between each source and their closest target
         This can be used when approximating the location of the houses to their postcode district
-        The approximation reduces the complexity of finding the distance between the closest target and the houses
-        from O(HT) to O(H+DT) (in most cases H >> D and H >> T)
     :param targets: the GeoDataFrame of targets
-    :param districts: the GeoDataFrame of districts for optimization
+    :param sources: the GeoDataFrame of sources
     """
-    return districts.geometry.apply(targets.distance).min(axis=1)
+    return sources.geometry.apply(targets.distance).min(axis=1)
