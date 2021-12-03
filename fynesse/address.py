@@ -19,6 +19,16 @@ def one_hot_encoding(df, column, *, values=None):
 
 
 def test_model(connection, year, postcode, *, response, family, make_design):
+    """ Tests a design by taking all data from a year in a postcode, 
+        training on 80% of it and testing on 20%.
+        :param connection: the database connection
+        :param year: the year of this data
+        :param postcode: the postcode of this data
+        :param response: the response column ("price" for this task)
+        :param family: the family of the model
+        :param make_design: the method creating the design matrix
+    """
+    
     data = access.get_houses(connection, postcode=postcode,
                              sold_after=f"{year-1}-06-01",
                              sold_before=f"{year+1}-06-01)")
@@ -39,7 +49,14 @@ def test_model(connection, year, postcode, *, response, family, make_design):
 
 
 def predict_price(connection, latitude, longitude, year, property_type, threshold=100):
-    """Price prediction for UK housing."""
+    """ Predicts the price for a certain house by training the model on houses near in space and time
+        :param connection: the database connection
+        :param latitude: the latitude of the house
+        :param longitude: the longitude of the house
+        :param year: the year of this house
+        :param property_type: the type of property
+        :param threshold: the minimal amount of houses required for training
+    """
 
     input = pd.DataFrame.from_dict({
         "date": [f"{year}-01-01"],
